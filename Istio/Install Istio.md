@@ -21,6 +21,8 @@
   - Istio ingress DaemonSet 생성
   - Kubernetes role binding
 
+### [Installation Configuration Profiles](https://istio.io/latest/docs/setup/additional-setup/config-profiles/)
+
 ### Terraform script
 ```
 # Node that these are not Istio Gateway's component, but similar to Services.
