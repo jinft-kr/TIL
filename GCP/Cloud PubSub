@@ -1,0 +1,179 @@
+### **What Is Cloud Pub/Sub : Cloud Pub/Sub이란 무엇인가?**
+
+_**구글 클라우드(GCP)의 Pub/Sub**은 **클라우드 기반의 대용량 메시지 큐**이다. 흔히들 사용하는 RabbitMQ, JMS나 Kafka의 클라우드 버전으로 보면 된다._
+
+_**Pub/Sub**은 클라우드 기반의 서비스로 **비동기 메세징이 필요한 기능을 매니지드 서비스 형태로 제공**한다. 따라서 **별도의 설치나 운영 없이 손쉽게 사용이 가능**하다._
+
+_\* 메세지 큐(Message Queue)는 프로세스 또는 프로그램 간에 데이터를 교환할 때 사용하는 통신 방법 중에 하나로, 메세지 지향 미들웨어(Message Oriented Middleware: MOM)를 구현한 시스템을 의미한다._
+
+### **Main Features : 주요 특징**
+
+_**글로벌 스케일 큐**로, 전세계 어느 데이타 센터에서 접속하던지 구글 자체 광케이블망을 이용하여 **빠른 접근을 제공**한다._
+
+_**메세지 전달 보장**을 기능이 있으며,_ _**Pub/Sub**은 일반적인 큐 시스템과 다르게 메시지를 Subscriber가 읽어오는 **Pull 방식 이외**에, **Pub/Sub이 HTTP를 이용하여**_ **직접 Subscriber에게 메세지를 쏴주는 Push 방식을 같이 지원**한다.
+
+### **Core Concept : 핵심 개념**
+
+_**Pub/Sub**은 **게시/구독(Pub/Sub) 서비스**로, **메시지 전송자가 메시지 수신자와 분리되는 메시징 서비스**이다._
+
+**Pub/Sub 서비스의 주요 개념**은 다음과 같다.
+
+1.  **Topic(주제)** : 게시자(publisher)가 메시지를 전송하는, 이름이 지정된 리소스
+2.  **Subscription(구독)** : 특정 다일 주제(Topic)의 메시지 스트림이 구독 애플리케이션으로 전달되는 과정을 나타내는, 이름이 지정된 리소스
+3.  **Message(메시지)** : Topic에 쌓이는 데이터(게시자(publisher)가 Topic(주제)에 전달해 결과적으로 Subscriber(구독자)에게 전달되는 데이터와 (선택사항) 속성의 조합
+4.  **Message Attribute(메시지 속성)** : 게시자(Publisher)가 Message(메세지)에 대해 정의할 수 있는 키-값 쌍.
+    -   예) Key(iana.org/language\_tag)-Value (en)을 메시지에 추가하여 영어를 사용하는 구독자가 읽을 수 있다고 표시할 수 있음
+5.  **Publisher(게시자)** : 특정 Topic(주제)에 대한 메시지를 만들어 Message를 전송하는 애플리케이션
+6.  **Subscriber(구독자)** : 지정한 Subscription에 대한 Message를 받는 애플리케이션
+7.  **Acknowledgment(or “ack”)** : 구독자가 메시지를 정상저그오 수신한 후 구독자가 Pub/Sub에 보내는 신호. 확인된 메시지는 구독 메시지 큐에서 삭제됨
+8.  **pull/push** : 메세지를 전송하는 두가지 방법. 구독자가 메시지를 수신하기 위해서는 구독자가 선택한 endpoint로 Pub/Sub이 메시지를 push하거나 서비스에서 구독자가 메시지를 pull하는 방식이 있음
+
+[##_Image|kage@BscUM/btr0hcZS675/k4fe48gmZoxK0NwgSZD0c0/img.png|CDM|1.3|{"originWidth":1326,"originHeight":498,"style":"alignCenter","width":610,"height":229,"caption":"[기본 Pub/Sub 메시지 흐름] 굵게 표시된 문자는 메시지를 의미한다.","filename":"Untitled.png"}_##]
+
+### **Publisher & Subscriber Endpoint : 게시자와 구독자 엔드포인트**
+
+-   googleapis.com에 HTTPS를 요청할 수 있는 모든 애플리케이션
+-   App Engine 앱
+-   Coogle Compute Engine
+-   다른 타사 네트워크에서 호스팅되는 웹 서비스
+-   데스크톱
+-   휴대기기에 설치된 App
+-   브라우저
+-   ETC
+-   how a message passes from a publisher to a subscriber
+
+### **How a Message Passes From a Publisher To a Subscriber** **: Pub/Sub 메세지 전달 방법**
+
+[##_Image|kage@1lMTl/btr0gl3QnXk/OR3wRa9TvLkMSPBifRY9s0/img.png|CDM|1.3|{"originWidth":736,"originHeight":429,"style":"alignCenter","width":585,"height":341,"filename":"Untitled1.png"}_##]
+
+1.  `Publisher` 애플리케이션은 Pub/Sub 서비스에서 `Topic` 을 생성하고, `Message` 를 `Topic` 으로 전달한다.
+2.  `Message` 는 Cloud Pub/Sub의 Message Storage에 `Subscriber` 가 확인할 때까지 보존된다.
+3.  Cloud Pub/Sub은 `Message` 를 `Topic` 에서 개별 `Subscription` 으로 전달한다. 각각 `Subscription` 은 `Subscriber` 가 선택한 곳으로 push/pull 된 `Message` 를 전송한다.
+4.  `Subscriber` 가 지정한 endpoint로 Pub/Sub이 내보낸 메시지를 `Subscriber` 가 받는다.
+5.  `Subscriber` 가 수신된 각 `Message` 에 대해서 acknowledgement를 Pub/Sub으로 보낸다.
+6.  Pub/Sub 서비스는 `Subscription` 의 메시지 Queue에서 `Message` 를 삭제한다.
+
+### **Publisher-Subscriber Relationship : Publisher 와 Subscriber 의 다양한 관계**
+
+[##_Image|kage@dqCAdd/btr0eTUJTqm/6qmKDuCXrDyeEoko3q71PK/img.png|CDM|1.3|{"originWidth":736,"originHeight":429,"style":"alignCenter","width":618,"height":360,"filename":"Untitled2.png"}_##]
+
+-   ****하나의 'Topic'에 1개 이상의 'Subscription'으로 구성할 수 있음****
+-   게시자(Publisher) 애플리케이션이 메시지를 만들어 주제(Topic)로 전송한다. 그리고 구독자 애플리케이션은 주제에 대한 구독을 만들어 해당 주제로부터 메시지를 수신한다.
+-   게시-구독 관계는 **일대다(fan-out)**, **다대일(fan-in)**, **다대다** 형태를 취할 수 있다.
+-   예) 하나의 메세지를 로그 시스템과 데이터 베이스 양쪽에 저장하고 싶을 때, Topic을 만들고 로그 시스템용 Subscription, 데이타 베이스용 Subscription을 각각 만들어서 데이터를 읽을 수 있다.
+
+### **Message Delivery Type : 메세지 전달 방식**
+
+_**Pub/Sub**은 일반적인 큐 시스템과 다르게 메시지를 Subscriber가 읽어오는 **Pull 방식 이외**에, **Pub/Sub이 직접 Subscriber에게 메세지를 쏴주는 Push 방식을 같이 지원**한다._
+
+1.  **Pull** : **Subscriber가 Pub/Sub 서버에 Message를 요청할 때 전달받는** 구독 방식
+    1.  Subscriber 애플리케이션은 Message 를 달라고 요청한다.
+    2.  Pub/Sub 서버가 Message 와 확인 ID를 보낸다.
+    3.  Subscriber 는 ACK을 전달하고, Pub/Sub 서비스는 Subscription의 메시지 Queue에서 Message를 삭제한다.
+
+[##_Image|kage@AwrKt/btr0aTVCXKR/kiHaWZhS4LWceampltkG30/img.png|CDM|1.3|{"originWidth":500,"originHeight":328,"style":"alignCenter","width":432,"height":283,"filename":"pull.png"}_##]
+
+2.  **Push** : **Message가 오면 바로 Subscriber에게 전달되는** 방식
+    1.  Pub/Sub 서버는 각 메시지를 미리 구성된 엔드포인트에 있는 Subscriber 애플리케이션에 메시지가 왔다는 데이터를 전달한다.
+    2.  Subscriber는 ACK을 전달하고, Pub/Sub 서비스는 Subscription 의 메시지 Queue에서 Message를 삭제한다.
+
+[##_Image|kage@c86Fhi/btr0eSPjCaM/XK3Yf9hi6EwOLxnSCHSAA0/img.png|CDM|1.3|{"originWidth":500,"originHeight":328,"style":"alignCenter","width":450,"height":295,"filename":"push.png"}_##]
+
+### **What Is Different Pull and Push? : Pull / Push 방식 비교**
+
+| **구분** | **Pull(가져오기)** | **Push(내보내기)** |
+| --- | --- | --- |
+| 엔드 포인트 | \- 자격을 증명한 인터넷상의 모든 기기는 API 호출 가능 | \- 자격 증명이 어려운 서비스(구독자)에서 사용할 수 있음 |
+| 부하 분산 | \- 여러 구독자가 Share와 같은 Pull 요청을 구성할 수 있음 | \- 엔드 포인트가 부하 분산기가 될 수 있음 |
+| 구성 | \- 구성 필요 없음 | \- GCP 콘솔에서 내보내기 엔드 포인트를 구성해야 함   (구독자와 같은 프로젝트에 있는 App Engine 제외) |
+| 흐름 관리 | \- 구독자가 전달 속도를 조절함 | \- Cloud Pub/Sub 서버가 자동으로 흐름 제어를 구현 |
+| 지침 | \- 대량 메시지 - 메시지 처리의 효율성과 처리량이 중요할 경우 | \- Google Cloud 종속 서비스 외의 환경   \- 동일한 webnook에 의한 여러 주제를 처리해야 하는 경우   \- App Engine 표준 구독자 |
+
+### **Judging Performance of a Messaging Service : 메시징 서비스의 성능 판단**
+
+_**Pub/Sub 같은 메시징 서비스의 성능**은 **확장성**, **가용성**, **지연 시간**이라는 **3가지 요소로 판단**한다._
+
+_이 3가지 요소는 종종 상충하므로 두 요소를 개선하려만 다른 하나를 희생해야 한다._
+
+1.  **확장성** : 확장 가능한 서비스는 **지연 시간이 크게 늘어나거나 가용성의 현저한 저하 없이 점점 증가하는 로드를 처리**할 수 있어야 한다.
+    -   **로드** : **Pub/Sub 사용과 관련한 다양한 측정 기준**을 의미한다.
+        1.  주제 수
+        2.  게시자 수
+        3.  구독 수
+        4.  구독자 수
+        5.  메시지 수
+        6.  메시지 크기
+        7.  게시하거나 소비된 메시지 비율(처리량)
+        8.  특정 구독의 백로그 크기
+2.  **가용성** : 시스템의 가용성은 **다양한 유형의 문제를 얼마나 잘 처리해 최종 사용자가 오류 해결을 알아차리지 못하게 하는가**를 기준으로 측정된다.
+    1.  장애는 하드웨어(ex, 이스크 드라이브 미작동 또는 네트워크 연결 문제)나 소트프웨어에서 발생하거나 로드로 인해 발생할 수 있다.
+    2.  로드가 원인인 오류는 서비스 내(또는 같은 하드웨어나 소프트웨어 종속 항목에서 실행되는 다른 소프트웨어 구성요소 내) 트래픽의 갑작스러운 증가 때문에 리소스가 부족해지면 발생한다.
+    3.  가용성은 소프트웨어나 구성 설정의 구축 또는 배포 시 발생하는 인적 오류로 인해 저해되기도 한다.
+3.  **지연 시간** : **시스템 성능을 시간 기준으로 측정**한 것이다.
+    1.  게시된 메시지를 확인하는 데 걸리는 시간
+    2.  게시된 메시지가 구독자에게 전달되는 데 걸리는 시간
+
+### **Pub/Sub Basic Architecture : Pub/Sub 기본 아키텍처**
+
+_**Pub/Sub**는 **데이터 영역**과 **제어 영역**인 **2가지 주요 영역으로 구분**된다._
+
+1.  **데이터 영역** : 게시자와 구독자 간의 **데이터 이동을 처리**한다. 즉 메시지의 라이프사이클이라고도 생각할 수 있다.
+    -   데이터 영역 내의 서버는 **포워더**라고 한다.
+2.  **제어 영역** : 게시자와 구독자를 **데이터 영역의 서버에 할당하는 작업을 처리**한다.
+    -   제어 영역 내의 서버는 **라우터**라고 한다.
+
+[##_Image|kage@dcGudb/btr0eTOcBqt/MqWGpF5U5pWJ5z1zwr6qG0/tfile.svg|CDM|1.3|{"originWidth":802,"originHeight":329,"style":"alignCenter","width":590,"height":242,"caption":"[Pub/Sub Architecture]","filename":"wp_msg_lifecycle.svg"}_##]
+
+-   **Publishing Forwarder(게시 포워더)** : **게시된 메시지와 각 구독이 확인한 메시지를 설명하는 메타데이터를 모두 책임진다**. 그리고 특정 주제에 대해 수신하고 저장한 메시지 모음, 확인된 메시지에 대한 추적을 **게시 메시지 원본**이라고 부른다.
+-   **Subscribing Forwarder(구독 포워더)** : **구독자에게 메시지를 전달해주는 역할**을 한다. 게시 메시지 원본이 있는 하나 이상의 Publishing Forwarder(게시 포워더)에게 자신이 필요한 메시지를 요청하고 이를 구독자에게 전달한다.
+-   **메시지가 구독자에게 전달**되면 **구독자는 이를 구독 포워더에 알린다**. **구독 포워더는 다시 게시 포워더에게 알리며**, **게시 포워더는 알림을 게시 메시지 원본에 저장**한다. 이렇게 주제에 대한 **모든 구독이 메시지를 확인하면 메시지는 게시 메시지 원본과 저장소에서 비동기적으로 삭제**된다.
+
+### **Pub/Sub Pricing : Pub/Sub 가격 책정**
+
+**_Pub/Sub 비용과 관련된 세 가지 구성요소가 있다._**
+
+1.  **메시지 게시 및 전송을 위한 처리량 비용**
+    -   Pub/Sub Topic(주제)에 작성된 **총 바이트 수 (게시 처리량)**이며 일정 시간 동안 구독에서 Topic(읽기 처리량)을 읽는다.
+    -   메시지 전송 기본 SKU로 식별된 처리량의 **처음 10GiB는 무료**
+    -   그 추 모든 **GCP Region당 가격**은 **TiB당 $40**이다.
+    -   단 BigQuery 구독에서 BigQuery에서 읽고 쓰는 경우 **BigQuery 구독의 요금**은 **모든 GCP Region TiB당 $50**이다. **BigQuery 데이터 수집에 대한 추가 요금은 없다.**
+    -   **요청의 메시지 크기와 관계없이 각 요청에 최소 1KB가 평가**된다. 따라서 메시지가 1KB보다 작으면 요청 하나에 여러 메시지를 일괄 처리하는 것이 더 저렴하다.
+2.  **Google Cloud 영역 또는 리전 경계를 벗어나는 처리량과 연관된 이그레스 비용**
+    -   **메시지가 리전 경계를 넘을 때마다 이그레스 요금이 부과**된다. 메시지가 저장된 리전과 다른 리전에 여러 구독자가 있는 경우 각 구독자에게 전송되는 이그레스에 독립적으로 요금이 청구된다.
+    -   **Pub/Sub 사용에 부과되는 영역 이그레스 요금은 없다.**
+    -   **Google 제품으로 전송되는 이그레스는 이그레스 요금에서 제외되지 않는다.**
+    -   **Pub/Sub로 인그레스하는 경우 비용을 지불하지 않는다.** 예를 들어 게시자가 다른 리전이나 영역에 있는 경우 원래 서비스에 대한 이그레스 비용을 지불해야 하지만 인그레스 비용은 필요하지 않다. 마찬가지로 게시자가 Amazon Web Service (AWS) 또는 비공개 데이터 센터에서 게시하는 경우 Pub/Sub에 인그레스 수수료를 지불할 필요가 없다.
+3.  **스냅샷, 주제별 메시지, 구독에서 보관된 확인된 메시지의 스토리지 비용**
+    -   **구독 중 미확인 메시지**는 **최대 7일간 무료 저장** 가능하다.
+    -   **Pub/Sub 스토리지가 무료가 아닌 경우는 세가지** 이다. **스토리지**에 **월 $0.27/GIB**의 요금이 청구된다.
+        1.  주제는 모든 메시지를 보관하도록 구성된다. 이 경우 주제에 게시된 모든 메시지를 저장할 때 메시지 스토리지 요금이 부과된다.
+        2.  확인된 메시지를 보관하도록 구독이 구성된다. 보관된 확인 메시지에 대해 스토리지 요금이 부과된다.
+        3.  구독의 스냅샷을 만든 경우, 스냅샷의 미확인 메시지를 저장할 때 메시지 스토리지 요금이 부과된다.
+
+---
+
+### **Reference**
+
+-   [Pub/Sub란 무엇인가요?  |  Cloud Pub/Sub 문서  |  Google Cloud](https://cloud.google.com/pubsub/docs/overview?hl=ko)
+
+ [Pub/Sub란 무엇인가요?  |  Cloud Pub/Sub 문서  |  Google Cloud
+
+Pub/Sub 작동 방식 및 Pub/Sub와 관련된 여러 가지 용어를 이해합니다.
+
+cloud.google.com](https://cloud.google.com/pubsub/docs/overview?hl=ko)
+
+-   [Pub/Sub: Google 규모의 메시징 서비스  |  Google Cloud](https://cloud.google.com/pubsub/architecture?hl=ko#controls)
+
+ [Pub/Sub: Google 규모의 메시징 서비스  |  Google Cloud
+
+의견 보내기 Pub/Sub: Google 규모의 메시징 서비스 컬렉션을 사용해 정리하기 내 환경설정을 기준으로 콘텐츠를 저장하고 분류하세요. 개요 Pub/Sub는 안정성과 확장성이 뛰어난 비동기 메시징 서비
+
+cloud.google.com](https://cloud.google.com/pubsub/architecture?hl=ko#controls)
+
+-   [가격 책정  |  Cloud Pub/Sub  |  Google Cloud](https://cloud.google.com/pubsub/pricing?hl=ko)
+
+ [가격 책정  |  Cloud Pub/Sub  |  Google Cloud
+
+Pub/Sub 및 Pub/Sub 라이트 가격 책정 검토
+
+cloud.google.com](https://cloud.google.com/pubsub/pricing?hl=ko)
