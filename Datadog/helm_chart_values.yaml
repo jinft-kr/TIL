@@ -7,7 +7,7 @@ datadog:
     - name : DD_ENV
       value: <ENV>
     - name: DD_CONTAINER_EXCLUDE # Kubernetes 에서 일부 컨테이너를 제외
-      value: "image:istio-proxy image:isito-init kube_namespace:kube-system"
+      value: "image:<CONTAINER_IMAGE_NAME> image:<CONTAINER_IMAGE_NAME> kube_namespace:<KUBERNETES_NAMESPACE>"
       
   # Kubernetes 이벤트를 수집
   collectEvents: true
