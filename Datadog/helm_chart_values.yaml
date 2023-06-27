@@ -1,0 +1,271 @@
+datadog:
+  #List of integration(s) to ignore auto_conf.yaml.
+  ignoreAutoConfig:
+    - redisdb
+    - istio
+  env:
+    - name : DD_ENV
+      value: <ENV>
+    - name: DD_CONTAINER_EXCLUDE # Kubernetes 에서 일부 컨테이너를 제외
+      value: "image:istio-proxy image:isito-init kube_namespace:kube-system"
+      
+  # Kubernetes 이벤트를 수집
+  collectEvents: true
+  # datadog.apiKey -- Your Datadog API key
+
+  ## ref: https://app.datadoghq.com/account/settings#agent/kubernetes
+  apiKey: <DATADOG_API_KEY> 
+
+  # datadog.appKey -- Datadog APP key required to use metricsProvider
+
+  ## If you are using clusterAgent.metricsProvider.enabled = true, you must set
+  ## a Datadog application key for read access to your metrics.
+  appKey: <DATADOG_APP_KEY>
+
+  ## Set to 'datadoghq.com' to send data to the US1 site (default).
+  ## Set to 'datadoghq.eu' to send data to the EU site.
+  ## Set to 'us3.datadoghq.com' to send data to the US3 site.
+  ## Set to 'us5.datadoghq.com' to send data to the US5 site.
+  ## Set to 'ddog-gov.com' to send data to the US1-FED site.
+  site: <DATADOG_SITE> # datadoghq.com 
+
+  # datadog.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, off
+  # default logLevel은 INFO이나 Debug을 위해 수정할 경우를 대비해 변수 추가
+  logLevel: INFO
+
+  # kubelet configuration # 검토 필요
+  kubelet:
+    # @default -- true
+    tlsVerify: false
+
+  ## Enable logs agent and provide custom configs
+  logs:
+    # datadog.logs.enabled -- Enables this to activate Datadog Agent log collection
+
+    ## ref: https://docs.datadoghq.com/agent/basic_agent_usage/kubernetes/#log-collection-setup
+    # @default -- false
+    enabled: true
+
+    # datadog.logs.containerCollectAll -- Enable this to allow log collection for all containers
+
+    ## ref: https://docs.datadoghq.com/agent/basic_agent_usage/kubernetes/#log-collection-setup
+    # @default -- false
+    containerCollectAll: false
+
+    ## ref: https://docs.datadoghq.com/agent/logs/advanced_log_collection/?tab=configurationfile#automatic-multi-line-aggregation
+    autoMultiLineDetection: false
+
+
+  ## Enable apm agent and provide custom configs
+  apm:
+    # datadog.apm.portEnabled -- Enable APM over TCP communication (port 8126 by default)
+
+    ## ref: https://docs.datadoghq.com/agent/kubernetes/apm/
+    # @default -- false
+    portEnabled: true
+
+    # datadog.apm.enabled -- Enable this to enable APM and tracing, on port 8126
+    # DEPRECATED. Use datadog.apm.portEnabled instead
+
+    ## ref: https://github.com/DataDog/docker-dd-agent#tracing-from-the-host
+    # @default -- false
+    enabled: true
+
+    # datadog.apm.socketEnabled -- Enable APM over Socket (Unix Socket or windows named pipe)
+
+    ## ref: https://docs.datadoghq.com/agent/kubernetes/apm/
+    # 현재 TCP와 UDS중 TCP만 활성화
+    socketEnabled: false
+
+  ## Each key becomes a file in /conf.d
+  ## ref: https://github.com/DataDog/datadog-agent/tree/main/Dockerfiles/agent#optional-volumes
+  ## ref: https://docs.datadoghq.com/agent/autodiscovery/
+  confd:
+    redisdb.yaml: |-
+      ad_identifiers:
+        - redis
+      init_config:
+      instances:
+        - host: <REDIS_HOST>
+          port: <REDIS_PORT>
+          password: <REDIS_PASSWORD>
+
+  ## Enable process agent and provide custom configs
+  processAgent:
+    # datadog.processAgent.enabled -- Set this to true to enable live process monitoring agent
+
+    ## Note: /etc/passwd is automatically mounted to allow username resolution.
+    ## ref: https://docs.datadoghq.com/graphing/infrastructure/process/#kubernetes-daemonset
+    enabled: true
+
+    # datadog.processAgent.processCollection -- Set this to true to enable process collection in process monitoring agent
+
+    ## Requires processAgent.enabled to be set to true to have any effect
+    processCollection: true
+
+  networkMonitoring:
+    # datadog.networkMonitoring.enabled -- Enable network performance monitoring
+    # @default -- false
+    enabled: true
+
+  ## Universal Service Monitoring
+  ## See https://www.datadoghq.com/blog/universal-service-monitoring-datadog/ for more details and private beta signup.
+  serviceMonitoring:
+    # datadog.serviceMonitoring.enabled -- Enable Universal Service Monitoring
+    # @default -- false
+    enabled: true
+
+## This is the Datadog Cluster Agent implementation that handles cluster-wide
+## metrics more cleanly, separates concerns for better rbac, and implements
+## the external metrics API so you can autoscale HPAs based on datadog metrics
+## ref: https://docs.datadoghq.com/agent/kubernetes/cluster/
+clusterAgent:
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+    
+  # clusterAgent.enabled -- Set this to false to disable Datadog Cluster Agent
+  # @default -- true
+  enabled: true
+  
+  # Kubernetes 이벤트를 수집
+  rbac:
+    create: true
+    
+  ## Define the Datadog Cluster-Agent image to work with
+  image:
+    # clusterAgent.image.tag -- Cluster Agent image tag to use
+    tag: 7.44.1
+
+  ## The Cluster-Agent supports many additional environment variables
+  ## ref: https://docs.datadoghq.com/agent/cluster_agent/commands/#cluster-agent-options
+  env:
+    - name: DD_ADMISSION_CONTROLLER_TIMEOUT_SECONDS # Admission Controller가 요청을 처리하는 데 걸리는 최대 시간
+      value: 60
+
+  admissionController:
+    # clusterAgent.admissionController.enabled -- Enable the admissionController to be able to inject APM/Dogstatsd config and standard tags (env, service, version) automatically into your pods
+    enabled: true
+
+    # clusterAgent.admissionController.mutateUnlabelled -- Enable injecting config without having the pod label 'admission.datadoghq.com/enabled="true"'
+    # @default -- false
+    mutateUnlabelled: false
+
+  # clusterAgent.resources -- Datadog cluster-agent resource requests and limits.
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# fips is used to enable the fips sidecar container for GOVCLOUD environments.
+fips:
+  # fips.resources -- Resource requests and limits for the FIPS sidecar container.
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 20m
+    memory: 64Mi
+
+agents:
+  # # kube-state-metrics.image -- Override default image information for the kube-state-metrics container.
+  # image:
+  #  # kube-state-metrics.repository -- Override default image registry for the kube-state-metrics container.
+  #  repository: k8s.gcr.io/kube-state-metrics/kube-state-metrics
+  #  # kube-state-metrics.tag -- Override default image tag for the kube-state-metrics container.
+  #  tag: v1.9.8
+  #  # kube-state-metrics.pullPolicy -- Override default image pullPolicy for the kube-state-metrics container.
+  #  pullPolicy: IfNotPresent
+  podAnnotations:
+    sidecar.istio.io/inject: "false"
+    
+  ## Define the Datadog image to work with
+  image:
+    # agents.image.tag -- Define the Agent version to use
+    tag: 7.44.1
+    
+  containers:
+    agent:
+      # agents.containers.agent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off.
+      # If not set, fall back to the value of datadog.logLevel.
+      # @default -- INFO
+      logLevel:  # INFO
+
+      # agents.containers.agent.resources -- Resource requests and limits for the agent container.
+      resources:
+        requests:
+          cpu: 200m
+          memory: 128Mi
+        limits:
+          cpu: 400m
+          memory: 256Mi
+          
+    traceAgent:
+      # agents.containers.traceAgent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off
+      # @default -- INFO
+      logLevel:  # INFO
+
+      # agents.containers.traceAgent.resources -- Resource requests and limits for the trace-agent container
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50Mi
+        limits:
+          cpu: 50m
+          memory: 100Mi
+          
+    systemProbe:
+      # agents.containers.systemProbe.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off.
+      # If not set, fall back to the value of datadog.logLevel.
+      # @default -- INFO
+      logLevel:  # INFO
+
+      # datadog.systemProbe.enableDefaultKernelHeadersPaths -- Enable mount of default paths where kernel headers are stored
+      # @default -- truedatadog-operator-9qhg7datadog-operator-9qhg7
+      # COS (container optimized os) 를 사용시 필요한 파라미터
+      enableDefaultKernelHeadersPaths: false
+
+      # agents.containers.systemProbe.resources -- Resource requests and limits for the system-probe container
+      resources:
+        requests:
+          cpu: 50m
+          memory: 100Mi
+        limits:
+          cpu: 100m
+          memory: 200Mi
+          
+    securityAgent:
+      # agents.containers.securityAgent.logLevel -- Set logging verbosity, valid log levels are: trace, debug, info, warn, error, critical, and off.
+      # If not set, fall back to the value of datadog.logLevel.
+      # @default -- INFO
+      logLevel:  # INFO
+
+      # agents.containers.securityAgent.resources -- Resource requests and limits for the security-agent container
+      resources:
+        requests:
+          cpu: 100m
+          memory: 300Mi
+        limits:
+          cpu: 100m
+          memory: 300Mi
+          
+    initContainers:
+      # agents.containers.initContainers.resources -- Resource requests and limits for the init containers
+      resources:
+        requests:
+          cpu: 100m
+          memory: 200Mi
+        limits:
+          cpu: 100m
+          memory: 200Mi
+providers:
+  gke:
+    # providers.gke.autopilot -- Enables Datadog Agent deployment on GKE Autopilot
+    autopilot: false
+
+    # providers.gke.cos -- Enables Datadog Agent deployment on GKE with Container-Optimized OS (COS)
+    # 위 설정은 하기 에러 메시지에서 gke node 커널에 위치한 sysprobe 에 대한 디렉토리를 접근 가능한 위치로 마운트 시키는 설정입니다.
+    cos: true
